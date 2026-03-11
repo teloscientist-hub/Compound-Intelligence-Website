@@ -1,0 +1,15 @@
+{
+  "name": "compound-intelligence-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Compound Intelligence Partners website with Netlify serverless email functions",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "resend": "^3.5.0"
+  },
+  "scripts": {
+    "dev": "netlify dev"
+  }
+}

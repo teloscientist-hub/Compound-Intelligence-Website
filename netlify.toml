@@ -1,0 +1,20 @@
+[build]
+  # No build step needed — static HTML site
+  publish = "."
+  functions = "netlify/functions"
+
+[build.environment]
+  # Node version for the serverless functions
+  NODE_VERSION = "20"
+
+# Route /api/* shorthand to Netlify functions
+[[redirects]]
+  from = "/api/*"
+  to   = "/.netlify/functions/:splat"
+  status = 200
+
+# Optional: friendly 404
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
+  status = 200

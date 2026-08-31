@@ -23,7 +23,7 @@
   #bigdate { font-size:30px; color:var(--accent); font-variant-numeric:tabular-nums; }
   #slidetitle { font-size:15px; color:var(--dim); text-align:right; }
   /* timeline strip */
-  #strip { position:relative; height:56px; margin:4px 0 6px; }
+  #strip { position:relative; height:56px; margin:4px 0 6px; cursor:pointer; }
   #strip .rail { position:absolute; left:0; right:0; top:26px; height:2px;
                  background:var(--tick); }
   .tick { position:absolute; top:18px; width:2px; height:18px;
@@ -33,6 +33,9 @@
   .tick .lbl { position:absolute; top:34px; left:50%; transform:translateX(-50%);
                font-size:10px; color:var(--dim); white-space:nowrap; display:none; }
   .tick.on .lbl { display:block; color:var(--accent); }
+  .tick .dec { position:absolute; top:-2px; left:50%; transform:translateX(-50%);
+               font-size:10px; color:var(--dim); white-space:nowrap;
+               font-family:Helvetica, Arial, sans-serif; letter-spacing:.06em; }
   /* story */
   #story { background:var(--panel); border-radius:6px; padding:20px 24px 16px;
            margin:8px 0 14px; min-height:180px; }
@@ -67,13 +70,30 @@ const SLIDES = [{"beat": "BOOKEND", "title": "BOOKEND OPEN · Optimus J5, sternu
 const FIELDS = ["DATE", "WHAT", "WHERE", "WHAT WAS NEW", "STAKES", "THREAD", "ON SCREEN"];
 let i = 0;
 const strip = document.getElementById('strip');
+// Decade markers (Mark 2026-08-30): label the tick where the timeline first
+// enters each new decade. Slides sit in cut order, not year-proportional, and
+// one beat deliberately steps back (the 1947 transistor after Apollo), so the
+// labels advance monotonically - a decade is marked once, at its first arrival.
+let lastDecade = 0;
 SLIDES.forEach((s, k) => {
   const t = document.createElement('div');
   t.className = 'tick' + (s.date ? ' dated' : '');
   t.style.left = (100 * k / (SLIDES.length - 1)) + '%';
-  t.innerHTML = '<span class="lbl">' + (s.date || '') + '</span>';
-  t.onclick = () => show(k);
+  let inner = '<span class="lbl">' + (s.date || '') + '</span>';
+  const ym = (s.date || '').match(/(\d{4})\s*$/);
+  if (ym) {
+    const dec = Math.floor(parseInt(ym[1], 10) / 10) * 10;
+    if (dec > lastDecade) { lastDecade = dec; inner += '<span class="dec">' + dec + '</span>'; }
+  }
+  t.innerHTML = inner;
+  t.onclick = (ev) => { ev.stopPropagation(); show(k); };
   strip.appendChild(t);
+});
+// Click anywhere on the strip - not just a tick - to jump to the nearest slide.
+strip.addEventListener('click', (e) => {
+  const r = strip.getBoundingClientRect();
+  const f = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
+  show(Math.round(f * (SLIDES.length - 1)));
 });
 const ticks = strip.querySelectorAll('.tick');
 function show(k) {
